@@ -7,11 +7,12 @@ import { createSidewalk } from './sidewalk.js';
 import { createLighting } from './lighting.js';
 import { createInterior } from './interior.js';
 import { createColliders } from './collision.js';
-import { createFirstPerson } from './controlsFirstPerson.js';
 import { createCity } from './city.js';
 import { createDoorPrompt } from './doorPrompt.js';
 import { createProductUI } from './productUI.js';
 import { createDayNightUI } from './dayNightUI.js';
+import { createAvatar } from './avatar.js';
+import { createThirdPersonCamera } from './thirdPerson.js';
 import { CONFIG } from './config.js';
 
 const canvas = document.getElementById('webgl');
@@ -31,7 +32,6 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x8fa3b8, 10, 18);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 40);
-camera.position.set(0, CONFIG.eyeHeight, 3.5);
 
 const materials = createMaterials();
 createFacade(scene, materials);
@@ -62,8 +62,12 @@ addBox(-2.0,0.3,-0.4,0.5,0.6,0.5);
 addBox(-CONFIG.interiorWidth/2+0.2,1.3,-1.2,0.4,2.6,2.6);
 addBox(CONFIG.interiorWidth/2-0.2,1.3,-1.2,0.4,2.6,2.6);
 
-const controlsFP = createFirstPerson(camera, renderer.domElement);
-const prevPos = camera.position.clone();
+const avatar = createAvatar();
+avatar.position.set(0, 0, 3.5);
+scene.add(avatar);
+
+const thirdPerson = createThirdPersonCamera(camera, renderer.domElement);
+const prevPos = avatar.position.clone();
 const productUI = createProductUI();
 
 const raycaster = new THREE.Raycaster();
@@ -73,9 +77,9 @@ let inInterior = false;
 const doorPrompt = createDoorPrompt(camera, renderer.domElement, () => {
   inInterior = true;
   interiorGroup.visible = true;
-  camera.position.set(0, CONFIG.eyeHeight, -1.5);
-  camera.rotation.set(0, Math.PI, 0);
-  prevPos.copy(camera.position);
+  avatar.position.set(0, 0, -1.5);
+  avatar.rotation.set(0, Math.PI, 0);
+  prevPos.copy(avatar.position);
   scene.fog.color.set(0x15100b);
   renderer.setClearColor(0x15100b);
 });
@@ -83,16 +87,15 @@ const doorPrompt = createDoorPrompt(camera, renderer.domElement, () => {
 resetBtn.addEventListener('click', () => {
   inInterior = false;
   interiorGroup.visible = false;
-  camera.position.set(0, CONFIG.eyeHeight, 3.5);
-  camera.rotation.set(0,0,0);
-  prevPos.copy(camera.position);
+  avatar.position.set(0, 0, 3.5);
+  avatar.rotation.set(0,0,0);
+  prevPos.copy(avatar.position);
   scene.fog.color.set(0x8fa3b8);
   renderer.setClearColor(0x8fa3b8);
 });
 
 canvas.addEventListener('click', (e) => {
   if (!inInterior) return;
-  if (document.pointerLockElement) return;
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
@@ -116,23 +119,23 @@ window.addEventListener('resize', onResize);
 const clock = new THREE.Clock();
 function animate() {
   const delta = clock.getDelta();
-  prevPos.copy(camera.position);
-  controlsFP.update(delta);
+  prevPos.copy(avatar.position);
+  thirdPerson.update(avatar, delta);
   const box = new THREE.Box3(
-    new THREE.Vector3(camera.position.x-0.4, camera.position.y-0.9, camera.position.z-0.4),
-    new THREE.Vector3(camera.position.x+0.4, camera.position.y-0.2, camera.position.z+0.4)
+    new THREE.Vector3(avatar.position.x-0.4, avatar.position.y-0.1, avatar.position.z-0.4),
+    new THREE.Vector3(avatar.position.x+0.4, avatar.position.y+1.8, avatar.position.z+0.4)
   );
   for (let i=0;i<colliders.length;i++) {
     if (box.intersectsBox(colliders[i])) {
-      camera.position.copy(prevPos);
+      avatar.position.copy(prevPos);
       break;
     }
   }
   if (!inInterior) {
-    doorPrompt.update(camera.position);
-    if (camera.position.z < -0.5) camera.position.copy(prevPos);
-    if (camera.position.z > 4.2) camera.position.copy(prevPos);
-    if (Math.abs(camera.position.x) > 3.2) camera.position.copy(prevPos);
+    doorPrompt.update(avatar.position);
+    if (avatar.position.z < -0.5) avatar.position.copy(prevPos);
+    if (avatar.position.z > 4.2) avatar.position.copy(prevPos);
+    if (Math.abs(avatar.position.x) > 3.2) avatar.position.copy(prevPos);
   }
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
