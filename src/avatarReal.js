@@ -1,6 +1,5 @@
 ﻿import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 let model, mixer, clock, animationGroup;
 
@@ -10,16 +9,6 @@ export function createRealAvatar(scene, onLoaded) {
   clock = new THREE.Clock();
   animationGroup = new THREE.AnimationObjectGroup();
   mixer = new THREE.AnimationMixer(animationGroup);
-
-  new RGBELoader()
-    .setDataType(THREE.HalfFloatType)
-    .load('/brown_photostudio_01.hdr', function (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      if (scene) {
-        scene.environment = texture;
-        scene.environmentIntensity = 0.6;
-      }
-    });
 
   loader.load('/default_model.glb', (gltf) => {
     model = gltf.scene;
@@ -31,8 +20,7 @@ export function createRealAvatar(scene, onLoaded) {
         object.castShadow = true;
         object.receiveShadow = true;
         if (object.material) {
-          object.material.envMapIntensity = 0.3;
-          if (object.material.map && object.material.name && !object.material.name.toLowerCase().includes('hair')) {
+          if (object.material.map && object.material.name && !String(object.material.name).toLowerCase().includes('hair')) {
             object.material.map.generateMipmaps = false;
             object.material.map.needsUpdate = true;
           }
@@ -44,13 +32,15 @@ export function createRealAvatar(scene, onLoaded) {
     group.add(model);
 
     loader.load('/animation.glb', function (animGltf) {
-      const clip = animGltf.animations[0];
-      clip.tracks = clip.tracks.filter((track) => {
-        const name = track.name;
-        return name.endsWith('Hips.position') || name.endsWith('.quaternion');
-      });
-      const action = mixer.clipAction(clip);
-      action.play();
+      if (animGltf.animations && animGltf.animations[0]) {
+        const clip = animGltf.animations[0].clone();
+        clip.tracks = clip.tracks.filter((track) => {
+          const name = track.name;
+          return name.endsWith('Hips.position') || name.endsWith('.quaternion');
+        });
+        const action = mixer.clipAction(clip);
+        action.play();
+      }
     });
 
     if (onLoaded) onLoaded(model);
