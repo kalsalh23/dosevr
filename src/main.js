@@ -11,7 +11,7 @@ import { createCity } from './city.js';
 import { createDoorPrompt } from './doorPrompt.js';
 import { createProductUI } from './productUI.js';
 import { createDayNightUI } from './dayNightUI.js';
-import { createAvatar } from './avatar.js';
+import { createRealAvatar } from './avatarReal.js';
 import { createThirdPersonCamera } from './thirdPerson.js';
 import { CONFIG } from './config.js';
 
@@ -62,7 +62,7 @@ addBox(-2.0,0.3,-0.4,0.5,0.6,0.5);
 addBox(-CONFIG.interiorWidth/2+0.2,1.3,-1.2,0.4,2.6,2.6);
 addBox(CONFIG.interiorWidth/2-0.2,1.3,-1.2,0.4,2.6,2.6);
 
-const avatar = createAvatar();
+const avatar = createRealAvatar();
 avatar.position.set(0, 0, 3.5);
 scene.add(avatar);
 
