@@ -25,7 +25,7 @@ if (!canvas) {
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x8fa3b8);
+renderer.setClearColor(0x87a6c0);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -33,7 +33,7 @@ renderer.toneMappingExposure = 1.12;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x8fa3b8, 10, 18);
+scene.fog = new THREE.Fog(0x87a6c0, 12, 20);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 40);
 
@@ -67,7 +67,7 @@ addBox(-CONFIG.interiorWidth/2+0.2,1.3,-1.2,0.4,2.6,2.6);
 addBox(CONFIG.interiorWidth/2-0.2,1.3,-1.2,0.4,2.6,2.6);
 
 const avatar = createRealAvatar(scene);
-avatar.position.set(0, 0, 3.5);
+avatar.position.set(0, 0, 4.2);
 scene.add(avatar);
 
 const thirdPerson = createThirdPersonCamera(camera, renderer.domElement);
@@ -92,11 +92,11 @@ if (resetBtn) {
   resetBtn.addEventListener('click', () => {
     inInterior = false;
     interiorGroup.visible = false;
-    avatar.position.set(0, 0, 3.5);
+    avatar.position.set(0, 0, 4.2);
     avatar.rotation.set(0,0,0);
     prevPos.copy(avatar.position);
-    scene.fog.color.set(0x8fa3b8);
-    renderer.setClearColor(0x8fa3b8);
+    scene.fog.color.set(0x87a6c0);
+    renderer.setClearColor(0x87a6c0);
   });
 }
 
@@ -141,7 +141,7 @@ function animate() {
   if (!inInterior) {
     doorPrompt.update(avatar.position);
     if (avatar.position.z < -0.5) avatar.position.copy(prevPos);
-    if (avatar.position.z > 4.2) avatar.position.copy(prevPos);
+    if (avatar.position.z > 4.8) avatar.position.copy(prevPos);
     if (Math.abs(avatar.position.x) > 3.2) avatar.position.copy(prevPos);
   }
   renderer.render(scene, camera);
