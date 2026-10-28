@@ -1,19 +1,9 @@
 ﻿import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 export function createRealAvatar(scene) {
   const group = new THREE.Group();
   const loader = new GLTFLoader();
-
-  new RGBELoader()
-    .setDataType(THREE.UnsignedByteType)
-    .load('/brown_photostudio_01.hdr', (texture) => {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      if (scene) {
-        scene.environment = texture;
-      }
-    });
 
   loader.load('/default_model.glb', (gltf) => {
     const model = gltf.scene;
@@ -24,7 +14,7 @@ export function createRealAvatar(scene) {
         obj.castShadow = true;
         obj.receiveShadow = true;
         if (obj.material) {
-          obj.material.envMapIntensity = 0.8;
+          obj.material.envMapIntensity = 1.0;
           if (obj.material.map && !String(obj.material.name).toLowerCase().includes('hair')) {
             obj.material.map.generateMipmaps = false;
             obj.material.map.needsUpdate = true;
